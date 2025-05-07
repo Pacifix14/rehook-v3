@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Hook Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .content-wrapper {
+      flex: 1 0 auto;
+    }
+
+    .footer {
+      flex-shrink: 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: #4F46E5;
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .video-container {
+      position: relative;
+      padding-bottom: 177.78%;
+      /* 9:16 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 0.5rem;
+      background-color: #000;
+    }
+
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .video-container.error .error-message {
+      display: flex;
+    }
+
+    .video-container.error video {
+      display: none;
+    }
+
+    .video-container .loaded {
+      /* For videos that loaded successfully */
+      opacity: 1;
+    }
+
+    .placeholder-poster {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .video-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: white;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .video-card-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      padding: 1rem;
+    }
+
+    .video-card-header {
+      margin-bottom: 0.75rem;
+      padding-left: 0.3rem;
+    }
+
+    .caption-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .caption-text {
+      flex: 1;
+      min-height: 2.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+      color: #374151;
+      line-height: 1.25rem;
+    }
+
+    .caption-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .video-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(79, 70, 229, 0.3);
+      border-radius: 50%;
+      border-top-color: #4F46E5;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(90deg, #4F46E5, #EC4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content-wrapper">
+    <header class="bg-indigo-600 shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-white">Video Hook Generator</h1>
+        <p class="mt-1 text-lg text-indigo-100">Create engaging video hooks for social media</p>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-center lg:col-span-2">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">How It Works</h2>
+          <ol class="space-y-4 text-gray-700">
+            <li class="flex items-start">
+              <span
+                class="flex items-center justify-center bg-indigo-600 text-white rounded-full w-6 h-6 mr-3 flex-shrink-0 text-sm">1</span>
+              <div>
+                <p class="font-medium">Upload your video</p>
+                <p class="text-sm text-gray-500 mt-1">Upload any MP4, MOV, AVI, or MKV video file</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <span
+                class="flex items-center justify-center bg-indigo-600 text-white rounded-full w-6 h-6 mr-3 flex-shrink-0 text-sm">2</span>
+              <div>
+                <p class="font-medium">Our AI analyzes the content</p>
+                <p class="text-sm text-gray-500 mt-1">We transcribe the audio and identify the most engaging hooks</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <span
+                class="flex items-center justify-center bg-indigo-600 text-white rounded-full w-6 h-6 mr-3 flex-shrink-0 text-sm">3</span>
+              <div>
+                <p class="font-medium">Get ready-to-post content</p>
+                <p class="text-sm text-gray-500 mt-1">Download short video hooks with AI-generated captions</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-3">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload Settings</h3>
+
+          <div id="dropZone"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 transition-colors mb-6">
+            <div class="space-y-3">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <p class="text-gray-700 font-medium">Drag and drop your video here</p>
+              <p class="text-gray-500">or</p>
+              <button id="uploadBtn"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+                Select Video
+              </button>
+              <p class="text-sm text-gray-500 mt-2">Supported formats: MP4, MOV, AVI, MKV</p>
+              <input type="file" id="fileInput" accept=".mp4,.mov,.avi,.mkv" class="hidden">
+            </div>
+          </div>
+
+          <div id="configOptions" class="mb-6">
+            <h4 class="text-md font-medium text-gray-800 mb-3">Processing Options</h4>
+            <div class="mb-4">
+              <label for="numVideos" class="block text-sm font-medium text-gray-700 mb-2">
+                Number of Videos to Generate
+              </label>
+              <div class="flex items-center space-x-4">
+                <input type="number" id="numVideos" name="numVideos" min="1"
+                  class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="max">
+                <span class="text-sm text-gray-500">Enter a number or leave empty for maximum</span>
+              </div>
+              <p id="numVideosError" class="mt-1 text-sm text-red-600 hidden">Please specify how many videos to generate
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <button id="startProcessingBtn"
+              class="w-full flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                </path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Start Processing
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h3 class="text-lg font-medium mb-3">Processing Status</h3>
+        <div id="statusContainer" class="flex items-center mb-2">
+          <div id="statusSpinner" class="spinner mr-2 hidden"></div>
+          <div id="statusText" class="text-gray-700">Ready to process video</div>
+        </div>
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div id="results" class="hidden">
+        <h2 class="text-2xl font-bold mb-6">Generated Videos</h2>
+        <div class="flex justify-between items-center mb-6">
+          <p class="text-gray-600"><span id="videoCount">0</span> videos generated</p>
+          <button id="downloadAllBtn"
+            class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Download All
+          </button>
+        </div>
+
+        <!-- Fixed placeholder grid -->
+        <div id="videoGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- This will be populated with all videos + placeholders -->
+        </div>
+
+        <!-- Dynamic videos (hidden, but updated in background) -->
+        <div id="videoList" class="hidden"></div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+      <p>©️ 2024 Video Hook Generator. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const numVideosInput = document.getElementById('numVideos');
+    const numVideosError = document.getElementById('numVideosError');
+    const statusText = document.getElementById('statusText');
+    const progressBar = document.getElementById('progressBar');
+    const results = document.getElementById('results');
+    const videoList = document.getElementById('videoList');
+    const statusSpinner = document.getElementById('statusSpinner');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const videoCount = document.getElementById('videoCount');
+    const startProcessingBtn = document.getElementById('startProcessingBtn');
+
+    let selectedFile = null;
+
+    // Disable the start processing button initially
+    startProcessingBtn.disabled = true;
+
+    // File input change handler
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        selectedFile = e.target.files[0];
+        updateProcessingButtonState();
+        // Show the file name in the drop zone
+        const fileName = document.createElement('p');
+        fileName.className = 'mt-2 text-sm font-medium text-indigo-600';
+        fileName.textContent = `Selected: ${selectedFile.name}`;
+
+        // Remove any existing file name display
+        const existingFileName = dropZone.querySelector('.text-indigo-600');
+        if (existingFileName) {
+          existingFileName.remove();
+        }
+
+        dropZone.querySelector('.space-y-3').appendChild(fileName);
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+      }
+    });
+
+    // Upload button click handler
+    uploadBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // Drag and drop handlers
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      if (!selectedFile) {
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+      }
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+
+      if (e.dataTransfer.files.length > 0) {
+        selectedFile = e.dataTransfer.files[0];
+        updateProcessingButtonState();
+
+        // Show the file name in the drop zone
+        const fileName = document.createElement('p');
+        fileName.className = 'mt-2 text-sm font-medium text-indigo-600';
+        fileName.textContent = `Selected: ${selectedFile.name}`;
+
+        // Remove any existing file name display
+        const existingFileName = dropZone.querySelector('.text-indigo-600');
+        if (existingFileName) {
+          existingFileName.remove();
+        }
+
+        dropZone.querySelector('.space-y-3').appendChild(fileName);
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+      }
+    });
+
+    // Number of videos input handler
+    numVideosInput.addEventListener('input', () => {
+      numVideosError.classList.add('hidden');
+      updateProcessingButtonState();
+    });
+
+    // Update start processing button state
+    function updateProcessingButtonState() {
+      startProcessingBtn.disabled = !selectedFile;
+    }
+
+    // Start processing button handler
+    startProcessingBtn.addEventListener('click', () => {
+      if (selectedFile) {
+        uploadFile(selectedFile);
+      }
+    });
+
+    function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Get number of videos to generate
+      const numVideos = numVideosInput.value.trim() || 'max';
+      formData.append('num_videos', numVideos);
+
+      // Update status to indicate upload is starting
+      statusText.textContent = 'Uploading video...';
+      statusSpinner.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      startProcessingBtn.disabled = true;
+
+      // Clear existing videos and reset the display
+      const videoGrid = document.getElementById('videoGrid');
+      videoGrid.innerHTML = '';
+      results.classList.add('hidden');
+      videoCount.textContent = '0';
+
+      fetch('/upload', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            // Reset to polling for status, since processing happens asynchronously
+            statusText.textContent = 'Processing video...';
+
+            // Start polling for status updates more frequently
+            clearInterval(statusPolling);
+            statusPolling = setInterval(updateStatus, 2000);
+          } else {
+            statusText.textContent = `Error: ${data.error || 'Unknown error'}`;
+            progressBar.style.width = '0%';
+          }
+        })
+        .catch(error => {
+          console.error('Upload error:', error);
+          statusText.textContent = `Error: ${error.message || 'Upload failed'}`;
+          progressBar.style.width = '0%';
+        });
+    }
+
+    // Function to test directly fetching a video URL
+    function testDirectFetch(videoUrl) {
+      console.log(`Testing direct fetch of: ${videoUrl}`);
+      fetch(videoUrl, { method: 'HEAD' })
+        .then(response => {
+          console.log(`Direct fetch response: ${response.status} ${response.statusText}`);
+          console.log(`Content type: ${response.headers.get('content-type')}`);
+          console.log(`Content length: ${response.headers.get('content-length')}`);
+
+          if (!response.ok) {
+            console.error(`Failed to fetch video directly: ${response.status} ${response.statusText}`);
+          } else {
+            console.log(`Video URL accessible directly: ${videoUrl}`);
+
+            // Try to display the video directly as an image to test
+            const img = document.createElement('img');
+            img.src = videoUrl;
+            img.style.display = 'none';
+            document.body.appendChild(img);
+
+            // Check if we can download it
+            const link = document.createElement('a');
+            link.href = videoUrl;
+            link.target = '_blank';
+            link.style.display = 'none';
+            link.textContent = 'test';
+            document.body.appendChild(link);
+            console.log('Created test elements for direct access');
+          }
+        })
+        .catch(error => {
+          console.error(`Error in direct fetch test: ${error}`);
+        });
+    }
+
+    // Function to create placeholder video cards
+    function createPlaceholders() {
+        const videoGrid = document.getElementById('videoGrid');
+        videoGrid.innerHTML = ''; // Clear existing content
+        
+        // Create 4 placeholder cards
+        for (let i = 0; i < 4; i++) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'video-card bg-white rounded-xl shadow-md overflow-hidden';
+            placeholder.innerHTML = `
+                <div class="video-container">
+                    <div class="bg-gray-200 w-full h-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="video-card-content">
+                    <div class="video-card-header">
+                        <h3 class="font-semibold text-lg">Loading...</h3>
+                    </div>
+                    <div class="caption-card">
+                        <p class="caption-text">Loading caption...</p>
+                        <div class="caption-actions">
+                            <button class="px-3 py-1.5 bg-gray-200 text-gray-500 text-sm rounded cursor-not-allowed" disabled>
+                                Copy Caption
+                            </button>
+                            <button class="px-3 py-1.5 bg-gray-200 text-gray-500 text-sm rounded cursor-not-allowed" disabled>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="px-3 py-1.5 bg-gray-200 text-gray-500 text-sm rounded cursor-not-allowed" disabled>
+                            Download Video
+                        </button>
+                        <button class="px-3 py-1.5 bg-gray-200 text-gray-500 text-sm rounded cursor-not-allowed" disabled>
+                            Share
+                        </button>
+                    </div>
+                </div>
+            `;
+            videoGrid.appendChild(placeholder);
+        }
+    }
+
+    // Function to update status
+    let lastStatus = '';
+    let etag = null;
+    let statusPolling = null;
+    let availableVideos = [];
+    let errorCount = 0;
+    const MAX_ERROR_RETRIES = 3;
+
+    function updateStatus() {
+        // Set up fetch options with ETag if available
+        const options = {
+            method: 'GET',
+            headers: {}
+        };
+
+        if (etag) {
+            options.headers['If-None-Match'] = etag;
+        }
+
+        fetch('/status', options)
+            .then(response => {
+                // Reset error count on successful response
+                errorCount = 0;
+                
+                // Cache the ETag for future requests
+                if (response.headers.has('ETag')) {
+                    etag = response.headers.get('ETag');
+                }
+
+                // If not modified, nothing to do
+                if (response.status === 304) {
+                    return null;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                // If response was 304 Not Modified, data will be null
+                if (!data) return;
+
+                console.log("Status update:", data);
+
+                // Always update the status text, even if it's the same
+                statusText.textContent = data.status || 'Ready to process video';
+
+                // Show/hide spinner based on status
+                if (data.status === "Ready to process video" ||
+                    data.status === "Video processing completed successfully" ||
+                    data.status.includes("Error")) {
+                    statusSpinner.classList.add('hidden');
+                } else {
+                    statusSpinner.classList.remove('hidden');
+                }
+
+                if (data.progress !== undefined) {
+                    progressBar.style.width = `${data.progress}%`;
+                } else {
+                    progressBar.style.width = '0%';
+                }
+
+                // Check if we have available videos
+                if (data.available_videos && data.available_videos.length > 0) {
+                    console.log("Available videos:", data.available_videos);
+                    // Update video count
+                    videoCount.textContent = data.available_videos.length;
+
+                    // Update availableVideos array
+                    availableVideos = data.available_videos;
+
+                    // Show results section
+                    results.classList.remove('hidden');
+
+                    // Update video grid with actual videos
+                    const videoGrid = document.getElementById('videoGrid');
+
+                    // Only clear the grid if we're showing new videos
+                    if (data.status === "Video processing completed successfully") {
+                        videoGrid.innerHTML = ''; // Clear existing content
+                    }
+
+                    // Keep track of videos we've already displayed
+                    const displayedVideos = new Set(
+                        Array.from(videoGrid.querySelectorAll('.video-card'))
+                            .map(card => card.getAttribute('data-video-name'))
+                    );
+
+                    data.available_videos.forEach((video, index) => {
+                        // Skip if we've already displayed this video
+                        if (displayedVideos.has(video)) {
+                            console.log(`Video already displayed: ${video}`);
+                            return;
+                        }
+
+                        console.log(`Adding new video: ${video}`);
+                        const caption = data.available_captions?.[index] || null;
+                        const videoElement = document.createElement('div');
+                        videoElement.className = 'video-card bg-white rounded-xl shadow-md overflow-hidden';
+                        videoElement.setAttribute('data-video-name', video);
+
+                        // Create video container with actual video element
+                        videoElement.innerHTML = `
+                            <div class="video-container" id="container-${video}">
+                                <video class="hook-video w-full h-full" controls preload="metadata" onerror="handleVideoError(this, '${video}')">
+                                    <source src="/videos/${video}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-card-content">
+                                <div class="video-card-header">
+                                    <h3 class="font-semibold text-lg">Hook ${index + 1}</h3>
+                                </div>
+                                ${caption ? `
+                                <div class="caption-card">
+                                    <p class="caption-text">Loading caption...</p>
+                                    <div class="caption-actions">
+                                        <button class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors copy-caption-btn"
+                                            data-caption-path="${caption}">
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                                                </svg>
+                                                Copy Caption
+                                            </span>
+                                        </button>
+                                        <a href="/captions/${caption}" 
+                                           class="px-3 py-1.5 bg-white border border-indigo-600 text-indigo-600 text-sm rounded hover:bg-indigo-50 transition-colors flex items-center"
+                                           download>
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                            </svg>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                <div class="video-actions">
+                                    <a href="/videos/${video}" 
+                                       class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors flex-1 text-center"
+                                        download>Download Video</a>
+                                    <button class="px-3 py-1.5 border border-gray-300 text-sm rounded hover:bg-gray-50 transition-colors flex-1 share-btn"
+                                            data-video="${video}">
+                                        Share
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+                        // Add event listeners
+                        addButtonEventListeners(videoElement);
+
+                        // Add the video element to the grid
+                        videoGrid.appendChild(videoElement);
+
+                        // Test video availability
+                        testVideoAvailability(video);
+
+                        // Load caption if available
+                        if (caption) {
+                            fetch(`/captions/${caption}`)
+                                .then(response => response.text())
+                                .then(captionText => {
+                                    const captionPreview = captionText.split('\n')[0] || 'No caption available';
+                                    const captionElement = videoElement.querySelector('.caption-card p');
+                                    if (captionElement) {
+                                        captionElement.textContent = captionPreview;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error loading caption:', error);
+                                    const captionElement = videoElement.querySelector('.caption-card p');
+                                    if (captionElement) {
+                                        captionElement.textContent = 'Error loading caption';
+                                    }
+                                });
+                        }
+                    });
+                } else if (data.status === "Ready to process video") {
+                    // If we're in the initial state, show placeholders
+                    createPlaceholders();
+                }
+
+                // If processing is ongoing, poll more frequently
+                if (data.status && (data.status.includes("Creating video") ||
+                    data.status.includes("Processing"))) {
+                    clearInterval(statusPolling);
+                    statusPolling = setInterval(updateStatus, 1000); // Poll every second when active
+                } else if (data.status === "Video processing completed successfully" ||
+                    data.status === "Ready to process video") {
+                    // If processing is complete, slow down polling
+                    clearInterval(statusPolling);
+                    statusPolling = setInterval(updateStatus, 10000); // Poll every 10 seconds when idle
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching status:', error);
+                errorCount++;
+                
+                // If we've hit the max retry count, stop polling
+                if (errorCount >= MAX_ERROR_RETRIES) {
+                    console.error('Max error retries reached, stopping status polling');
+                    clearInterval(statusPolling);
+                    statusText.textContent = 'Error connecting to server. Please refresh the page.';
+                    statusSpinner.classList.add('hidden');
+                    return;
+                }
+                
+                // Don't show error message, just keep the current status
+                // statusText.textContent = 'Error fetching status';
+            });
+    }
+
+    // Function to test video availability
+    function testVideoAvailability(video) {
+      console.log(`Testing video availability: ${video}`);
+      fetch(`/videos/${video}`, { method: 'HEAD' })
+        .then(response => {
+          console.log(`Video ${video} response:`, {
+            status: response.status,
+            contentType: response.headers.get('content-type'),
+            contentLength: response.headers.get('content-length')
+          });
+          if (!response.ok) {
+            console.error(`Video ${video} not available: ${response.status} ${response.statusText}`);
+          }
+        })
+        .catch(error => {
+          console.error(`Error checking video ${video}:`, error);
+        });
+    }
+
+    // Function to handle video loading errors
+    function handleVideoError(videoElement, videoName) {
+      console.error(`Error loading video ${videoName}:`, {
+        error: videoElement.error,
+        networkState: videoElement.networkState,
+        readyState: videoElement.readyState
+      });
+
+      // Try to reload the video
+      const source = videoElement.querySelector('source');
+      if (source) {
+        const currentSrc = source.src;
+        source.src = '';
+        setTimeout(() => {
+          source.src = currentSrc;
+          videoElement.load();
+        }, 1000);
+      }
+    }
+
+    // Helper function to add event listeners to buttons
+    function addButtonEventListeners(element) {
+      // Add event listener for share button
+      const shareBtn = element.querySelector('.share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', function () {
+          const videoPath = this.getAttribute('data-video');
+          const url = `${window.location.origin}/videos/${videoPath}`;
+
+          if (navigator.share) {
+            navigator.share({
+              title: 'Check out this video hook!',
+              url: url
+            })
+              .catch(error => console.log('Error sharing:', error));
+          } else {
+            navigator.clipboard.writeText(url)
+              .then(() => {
+                this.textContent = 'URL Copied!';
+                setTimeout(() => {
+                  this.textContent = 'Share';
+                }, 2000);
+              })
+              .catch(error => console.error('Error copying URL:', error));
+          }
+        });
+      }
+
+      // Add event listener for copy caption button
+      const copyBtn = element.querySelector('.copy-caption-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+          const captionPath = this.getAttribute('data-caption-path');
+          const originalContent = this.innerHTML;
+
+          fetch(`/captions/${captionPath}`)
+            .then(response => response.text())
+            .then(captionText => {
+              navigator.clipboard.writeText(captionText)
+                .then(() => {
+                  this.innerHTML = `
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Copied!
+                                        </span>
+                                    `;
+                  setTimeout(() => {
+                    this.innerHTML = originalContent;
+                  }, 2000);
+                })
+                .catch(error => {
+                  console.error('Error copying caption to clipboard:', error);
+                  this.innerHTML = `
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Error
+                                        </span>
+                                    `;
+                  setTimeout(() => {
+                    this.innerHTML = originalContent;
+                  }, 2000);
+                });
+            })
+            .catch(error => {
+              console.error('Error fetching caption:', error);
+              this.innerHTML = `
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Error
+                                </span>
+                            `;
+              setTimeout(() => {
+                this.innerHTML = originalContent;
+              }, 2000);
+            });
+        });
+      }
+    }
+
+    // Function to pause all videos except the one that's playing
+    function pauseAllVideosExcept(currentVideo) {
+      document.querySelectorAll('.hook-video').forEach(video => {
+        if (video !== currentVideo) {
+          video.pause();
+        }
+      });
+    }
+
+    // Download all videos
+    downloadAllBtn.addEventListener('click', function () {
+      if (availableVideos.length === 0) {
+        alert('No videos available to download');
+        return;
+      }
+
+      // Download each video
+      availableVideos.forEach((video, index) => {
+        setTimeout(() => {
+          const tempLink = document.createElement('a');
+          tempLink.href = `/videos/${video}`;
+          tempLink.download = video;
+          tempLink.style.display = 'none';
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+        }, index * 300);
+      });
+    });
+
+    // Initial status check and start polling
+    updateStatus();
+    statusPolling = setInterval(updateStatus, 2000);
+
+    // Add event listeners to reset polling frequency when interacting with the page
+    dropZone.addEventListener('click', function () {
+      clearInterval(statusPolling);
+      statusPolling = setInterval(updateStatus, 2000);
+    });
+  </script>
+</body>
+
+</html>
