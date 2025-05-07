@@ -1,0 +1,6 @@
+<svg width="600" height="1067" viewBox="0 0 600 1067" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="600" height="1067" fill="#1F2937"/>
+    <circle cx="300" cy="534" r="100" fill="#4F46E5" opacity="0.2"/>
+    <path d="M350 534L275 578.35V489.65L350 534Z" fill="#4F46E5"/>
+    <text x="300" y="700" font-family="Inter, sans-serif" font-size="24" text-anchor="middle" fill="white">Loading video...</text>
+</svg> 

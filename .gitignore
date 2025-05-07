@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# OpenAI API key and other sensitive data
+.env
+
+# Video processing files
+*.mp4
+*.mp3
+*.wav
+*.srt
+*.avi
+*.mov
+*.mkv
+*.webm
+audio*.mp3
+transcript*.srt
+hook_*.mp4
+transition_*.mp4
+final_with_hook_*.mp4
+caption_*.txt
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# Outputs directory - can be customized
+outputs/
+captions/
+uploads/
+videos/
+
+# Status files
+*.json
+status.json
+processing_status.json 
