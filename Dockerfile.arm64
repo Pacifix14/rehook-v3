@@ -1,0 +1,65 @@
+##### DEPENDENCIES
+
+ARG platform=linux/arm64
+
+FROM --platform=$platform python:3.12-slim-bookworm AS deps
+WORKDIR /app
+
+# Install necessary tools and dependencies including FFmpeg
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    build-essential \
+    gcc \
+    libx264-dev \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+##### RUNNER
+
+FROM --platform=$platform python:3.12-slim-bookworm AS runner
+WORKDIR /app
+
+# Set runtime environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TZ=UTC
+
+# Install runtime dependencies including FFmpeg
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependencies from deps stage
+COPY --from=deps /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+
+# Copy the rest of the application
+COPY . .
+
+# Set build arguments and environment variables
+ARG AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION OPENAI_API_KEY
+ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+    AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+    AWS_REGION=$AWS_REGION \
+    OPENAI_API_KEY=$OPENAI_API_KEY
+
+# Create necessary directories
+RUN mkdir -p uploads videos captions outputs static
+
+# Make sure the directories have proper permissions
+RUN chmod -R 755 uploads videos captions outputs static
+
+# Expose the port Flask runs on
+EXPOSE 5004
+ENV PORT=5004
+
+# Run the Flask app
+CMD ["python", "app.py"]
